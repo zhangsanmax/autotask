@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # 允许手动触发
 
 jobs:
-  update-readme:
+  backup-aphorism:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
