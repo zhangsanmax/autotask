@@ -42,7 +42,7 @@ jobs:
         run: |
           git config --local user.email "zhangsanmax@gmail.com"
           git config --local user.name "zhangsanmax"
-          git add aphorism.md
+          git add .
           git commit -m "Update aphorism.md"
 
       - name: Push changes
