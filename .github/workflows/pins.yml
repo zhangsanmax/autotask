@@ -29,6 +29,7 @@ jobs:
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
+          token: ${{ secrets.SECRET_KEY }}  # Add this line
           commit_message: "chore: daily backup $(date +'%Y-%m-%d')"
           branch: main
           file_pattern: |
