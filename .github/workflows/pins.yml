@@ -1,0 +1,35 @@
+name: Backup Juejin Hot Posts Daily
+
+on:
+  schedule:
+    # 每天北京时间 8 点执行 (UTC 0点)
+    - cron: '0 12 * * *'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10 # 设置超时时间
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm install axios # 安装所需依赖
+
+      - name: Run backup script
+        run: node bin/pins.js # 假设脚本放在 bin 目录
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore: daily backup $(date +'%Y-%m-%d')"
+          branch: main
+          file_pattern: |
+            backup/*
