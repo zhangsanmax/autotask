@@ -1,4 +1,4 @@
-name: Update Aphorism Daily
+name: Backup Juejin Aphorism Daily
 
 on:
   schedule:
@@ -40,8 +40,8 @@ jobs:
 
       - name: Commit files
         run: |
-          git config --local user.email "zhangsanplus@gmail.com"
-          git config --local user.name "zhangsanplus"
+          git config --local user.email "zhangsanmax@gmail.com"
+          git config --local user.name "zhangsanmax"
           git add aphorism.md
           git commit -m "Update aphorism.md"
 
