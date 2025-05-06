@@ -31,22 +31,9 @@ jobs:
 
           echo "| $(date +'%Y-%m-%d') | $should_or_not | $aphorism |" >> backup/aphorism.md
 
-      # - name: Commit changes
-      #   uses: stefanzweifel/git-auto-commit-action@v4
-      #   with:
-      #     token: ${{ secrets.SECRET_KEY }} 
-      #     commit_message: "chore: update aphorism.md"
-      #     branch: main
-
-      - name: Commit files
-        run: |
-          git config --local user.email "zhangsanmax@gmail.com"
-          git config --local user.name "zhangsanmax"
-          git add .
-          git commit -m "Update aphorism.md"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          github_token: ${{ secrets.SECRET_KEY }}
-          branch: main  # 指定要推送的主分支名称
+          token: ${{ secrets.SECRET_KEY }} 
+          commit_message: "chore: update aphorism.md"
+          branch: main
