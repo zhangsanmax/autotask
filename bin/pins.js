@@ -146,11 +146,11 @@ async function main() {
       JSON.stringify(content, null, 2),
     )
     // 转换为 Markdown 并保存
-    const markdownContent = jsonToMarkdown(content)
-    fs.writeFileSync(
-      path.join(BACKUP_DIR, `${date}.md`),
-      markdownContent,
-    )
+    // const markdownContent = jsonToMarkdown(content)
+    // fs.writeFileSync(
+    //   path.join(BACKUP_DIR, `${date}.md`),
+    //   markdownContent,
+    // )
     console.log(`备份成功`)
   } catch (error) {
     console.error('备份失败:', error)
