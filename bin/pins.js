@@ -2,9 +2,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import axios from 'axios'
+import dayjs from 'dayjs'
 
 const API_URL = 'https://api.juejin.cn/recommend_api/v1/short_msg/hot'
-const BACKUP_DIR = path.join(process.env.GITHUB_WORKSPACE, 'backup')
+const BACKUP_DIR = path.join(process.env.GITHUB_WORKSPACE || './', 'backup')
+
 let cursor = '0' // 初始游标，从0开始
 
 async function fetchHotPosts() {
@@ -79,48 +81,76 @@ async function formatData(posts) {
   return content
 }
 
-function jsonToMarkdown(posts) {
-  let md = ''
+// 删除最近三十天的文件
+function deleteOldFiles() {
+  const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}\.json$/
+  const DAYS_LIMIT = 30
 
-  const formatTime = (timestamp) => {
-    return new Date(Number.parseInt(timestamp) * 1000).toLocaleString()
-  }
+  // 获取当前时间的日期部分
+  const currentDate = dayjs().startOf('day')
 
-  const buildReplies = (replies, depth = 1) => {
-    return replies.map(reply =>
-      `${'  '.repeat(depth)}- **${reply.username}**：${reply.content}`,
-    ).join('\n')
-  }
+  // 获取 30 天前的日期
+  const thirtyDaysAgo = currentDate.subtract(DAYS_LIMIT, 'day')
 
-  posts.forEach((post) => {
-    // 主帖子内容
-    md += `## @${post.username}\n\n`
-    md += `${post.content}\n\n`
-    md += `**发布时间**：${formatTime(post.ctime)}\n\n`
-    md += `[原帖链接](${post.url})\n\n`
+  // 遍历目录，删除不符合条件的文件
+  fs.readdirSync(BACKUP_DIR).forEach((filename) => {
+    // 匹配文件名格式
+    if (DATE_FORMAT.test(filename)) {
+      // 提取文件名中的日期部分 (例如：YYYY-MM-DD)
+      const fileDate = filename.split('.')[0]
 
-    // 处理图片
-    if (post.picture && post.picture.length > 0) {
-      md += `${post.picture.map(img => `<img src="${img}" style="max-width: 300px;max-height: 300px;"/>`).join('\n\n')}\n\n`
+      // 将文件名中的日期部分转化为 dayjs 对象
+      const fileDateObj = dayjs(fileDate)
+
+      // 如果文件日期早于30天前，删除文件
+      if (fileDateObj.isBefore(thirtyDaysAgo)) {
+        const filePath = path.join(BACKUP_DIR, filename)
+        fs.unlinkSync(filePath) // 删除文件
+        console.log(`Deleted old backup: ${filename}`)
+      }
     }
-
-    // 处理评论
-    if (post.comments && post.comments.length > 0) {
-      md += '### 评论\n\n'
-      post.comments.forEach((comment) => {
-        md += `- **@${comment.username}**：${comment.content}\n`
-        if (comment.reply && comment.reply.length > 0) {
-          md += `${buildReplies(comment.reply)}\n`
-        }
-      })
-      md += '\n'
-    }
-
-    md += '---\n\n'
   })
-
-  return md
 }
+
+// function jsonToMarkdown(posts) {
+//   let md = ''
+
+//   const formatTime = (timestamp) => {
+//     // 使用 dayjs 格式化时间
+//     return dayjs.unix(Number(timestamp)).format('YYYY-MM-DD HH:mm:ss')
+//   }
+
+//   const buildReplies = (replies, depth = 1) => {
+//     return replies.map(reply =>
+//       `${'  '.repeat(depth)}- **${reply.username}**：${reply.content}`,
+//     ).join('\n')
+//   }
+
+//   posts.forEach((post) => {
+//     // 主帖子内容
+//     md += `## @${post.username}\n\n`
+//     md += `${post.content}\n\n`
+//     md += `**发布时间**：${formatTime(post.ctime)}\n\n`
+//     md += `[原帖链接](${post.url})\n\n`
+//     // 处理图片
+//     if (post.picture && post.picture.length > 0) {
+//       md += `${post.picture.map(img => `<img src="${img}" style="max-width: 300px;max-height: 300px;"/>`).join('\n\n')}\n\n`
+//     }
+//     // 处理评论
+//     if (post.comments && post.comments.length > 0) {
+//       md += '### 评论\n\n'
+//       post.comments.forEach((comment) => {
+//         md += `- **@${comment.username}**：${comment.content}\n`
+//         if (comment.reply && comment.reply.length > 0) {
+//           md += `${buildReplies(comment.reply)}\n`
+//         }
+//       })
+//       md += '\n'
+//     }
+//     md += '---\n\n'
+//   })
+//   return md
+// }
 
 async function main() {
   try {
@@ -139,18 +169,24 @@ async function main() {
     }
 
     const content = await formatData(posts)
-    const date = new Date().toISOString().split('T')[0]
+    const date = dayjs().format('YYYY-MM-DD')
+
     // 保存为 JSON 文件
     fs.writeFileSync(
       path.join(BACKUP_DIR, `${date}.json`),
       JSON.stringify(content, null, 2),
     )
+
+    // 删除最近三十天的文件
+    deleteOldFiles()
+
     // 转换为 Markdown 并保存
     // const markdownContent = jsonToMarkdown(content)
     // fs.writeFileSync(
     //   path.join(BACKUP_DIR, `${date}.md`),
     //   markdownContent,
     // )
+
     console.log(`备份成功`)
   } catch (error) {
     console.error('备份失败:', error)
@@ -161,7 +197,4 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error('::error::', error)
-  process.exit(1)
-})
+main()
