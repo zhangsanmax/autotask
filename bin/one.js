@@ -28,7 +28,7 @@ function parseData(data) {
     return {
       title,
       url,
-      pic: picUrl.attr('src'),
+      // pic: picUrl.attr('src'),
       date: dayjs(dateString, 'DD MMM YYYY').format('YYYY-MM-DD'),
     }
   }).filter(Boolean)
