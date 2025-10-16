@@ -21,10 +21,12 @@ jobs:
           node-version: 20.x
 
       - name: Install dependencies
-        run: npm install axios # 安装所需依赖
+        run: npm install axios cheerio dayjs
 
       - name: Run backup script
-        run: node bin/pins.js 
+        run: |
+          node bin/pins.js 
+          node bin/one.js
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
