@@ -5,7 +5,7 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import dayjs from 'dayjs'
 
-const API_URL = 'https://www.wufazhuce.com'
+const API_URL = 'http://www.wufazhuce.com'
 const BACKUP_DIR = path.join(process.env.GITHUB_WORKSPACE || './', 'backup')
 const BACKUP_PATH = path.join(BACKUP_DIR, 'one.json')
 
